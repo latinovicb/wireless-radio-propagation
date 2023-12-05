@@ -1,26 +1,29 @@
 % Constants
-frequencies = [900e6]; % UMTS, LTE, 5G frequencies
+frequencies = [900e6, 1800e6, 3600e6]; % UMTS, LTE, 5G frequencies
+model_names = {'UMTS', 'LTE', '5G'}
+loss_model_names = {'plane earth loss', 'free space path loss', 'COST-231 hata'}
 ht = 40; % Transmitter antenna height in meters
-hr = 1,8;  % Receiver antenna height in meters
+hr = 1.8;  % Receiver antenna height in meters
 epsilon_r = 17.2; % Relative permittivity of the ground
-c = 3e8
+c = 3e8;
 
-% Distance range
+Cm = 15; %dB
 
+% For plotting
+counter = 0;
 
 % Plotting for each frequency
-figure;
 for f = frequencies
     lambda = c / f; % Wavelength
-    received_power = zeros(size(distances));
     
-    Ev_vals = {};
-    Eh_vals = {};
+    counter = counter + 1;
+    Ev_vals = [];
+    Eh_vals = [];
 
-    distances = {}; % points from 100m to 10km
+    distances = []; % points from 100m to 10km
 
     k = (2*pi)/(c/f);
-    for d = 100:10:1000
+    for d = 100:1:10000
         distances  = [distances, d];
 
         beta_angle = atan((ht + hr) / d);
@@ -37,26 +40,32 @@ for f = frequencies
         Ev = E0 * (1 + Rv*exp(-j*k*delta));
         Eh = E0 * (1 + Rh*exp(-j*k*delta));
 
-        Ev_vals = [Ev_vals, Ev];
-        Eh_vals = [Eh_vals, Eh];
+        Ev_vals = [Ev_vals, 10*log(abs(Ev))];
+        Eh_vals = [Eh_vals, 10*log(abs(Eh))];
         
-        % theta = atan((ht - hr) / d);
-        % Rh = ((cos(theta) - sqrt(epsilon_r - sin(theta)^2)) / (cos(theta) + sqrt(epsilon_r - sin(theta)^2)))^2;
-        % received_power(i) = 1 / (d^2) * (1 + Rh * exp(-j * 2 * pi * d / lambda));
     end
 
-    % Plotting
-    % loglog(distances, abs(received_power), 'DisplayName', sprintf('%d MHz', f / 1e6));
-    % hold on;
-    plot(Ev_vals,distances);
-    plot(Eh_vals, distances);
+    figure(1);
+    subplot(3, 1, counter);
+    semilogx(distances, Eh_vals)
+    hold on;
+    semilogx(distances, Ev_vals);
+    title(model_names(counter));
+    xlabel('Distance (m)');
+    ylabel('Received Power');
+    legend('show');
+    grid on;
 
+    figure(2);
+    subplot(3, 1, counter);
+    semilogx(distances, Eh_vals)
+    hold on;
+    semilogx(distances, Ev_vals);
+    title(loss_model_names(counter));
+    xlabel('Distance (m)');
+    ylabel('Path loss');
+    legend('show');
+    grid on;
+    hold off;
 end
-
-% title('Two-Ray Reflection Model');
-% xlabel('Distance (m)');
-% ylabel('Received Power');
-% legend('show');
-% grid on;
-% hold off;
 
