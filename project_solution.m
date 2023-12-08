@@ -23,7 +23,7 @@ for f = frequencies
     lambda = c / f; % Wavelength
     
     distance_vector = 100:1:10000; % points from 100m to 10km
-    % total_dist = length(distance_vector) % total distance
+    total_dist = length(distance_vector); % total distance
 
     % one of these is correct 
     % beta_angle = asin(sqrt(epsilon_r - 1) / sqrt(epsilon_r^2 - 1)) % brewster angle
@@ -77,12 +77,14 @@ for f = frequencies
 
         % plane earth loss - 2 ray model
         % Lray = 40*log10(d) - 20*log10(ht) - 20*log10(hr); % what is r ? 
+
         Lray = ((((4*pi*d))/lambda)^2) / ...
           (4 * sin((2*pi*ht*hr)/(lambda*d)).^2);
+        Lray = 10*log10(Lray); % convert to db
 
-        if (lambda*d) > 2*pi*ht*hr
-          Lray = (d^4)/((ht*hr)^2);
-        end
+        % if (lambda*d) > 2*pi*ht*hr
+        %   Lray = (d^4)/((ht*hr)^2);
+        % end
 
         % free space loss
         Lf = 32.4 + 20*log10(d/1000) + 20*log10(f/1000000); % convert dist to km and frequency to Mhz
@@ -100,12 +102,12 @@ for f = frequencies
         hr_small_city = (1.1*log10(f) - 0.7)*hr - (1.56*log10(f) - 0.8); % small city, f in Mhz ??
         L = A + B*log10(f/1000000) - 13.82*log10(ht) - hr_small_city + (C_tunable - 6.55*log10(ht))*log10(d/1000) + Cm;
 
-        Lray_vals = [Lray_vals, -10*log10(Lray)];
+        Lray_vals = [Lray_vals, -Lray];
         Lf_vals = [Lf_vals, -Lf]; % already in dB
         L_vals = [L_vals, -L]; % already in dB
     end
     
-    break_point_d = (4*pi*hr*hr)/(lambda);
+    break_point_d = (4*hr*ht)/(lambda);
 
     figure(1);
     subplot(3, 1, counter);
