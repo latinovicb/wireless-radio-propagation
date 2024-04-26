@@ -25,9 +25,6 @@ for f = frequencies
     distance_vector = 100:1:10000; % points from 100m to 10km
     total_dist = length(distance_vector); % total distance
 
-    % one of these is correct 
-    % beta_angle = asin(sqrt(epsilon_r - 1) / sqrt(epsilon_r^2 - 1)) % brewster angle
-
     k = (2*pi)/(lambda);
 
     counter = counter + 1;
@@ -61,30 +58,17 @@ for f = frequencies
 
         E0 = (exp(-j*k*Rd)) / Rd;
 
-        % k_delta = ((4*pi)/(lambda)) * ((ht*hr)/d); % not sure if needed
-
         Ev = E0 * (1 + Rv*exp(-j*k*delta));
         Eh = E0 * (1 + Rh*exp(-j*k*delta));
-        
-        % Ev = ((Ev)^2)/377; % convert v/m to w/m^2 ??
-        % Eh = ((Eh)^2)/377;
-
 
         Ev_vals = [Ev_vals, 20*log10(abs(Ev))]; % in db
         Eh_vals = [Eh_vals, 20*log10(abs(Eh))];
         
         % -------------------------------- loss models
 
-        % plane earth loss - 2 ray model
-        % Lray = 40*log10(d) - 20*log10(ht) - 20*log10(hr); % what is r ? 
-
         Lray = ((((4*pi*d))/lambda)^2) / ...
           (4 * sin((2*pi*ht*hr)/(lambda*d)).^2);
         Lray = 10*log10(Lray); % convert to db
-
-        % if (lambda*d) > 2*pi*ht*hr
-        %   Lray = (d^4)/((ht*hr)^2);
-        % end
 
         % free space loss
         Lf = 32.4 + 20*log10(d/1000) + 20*log10(f/1000000); % convert dist to km and frequency to Mhz
